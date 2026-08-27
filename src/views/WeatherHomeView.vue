@@ -13,6 +13,33 @@ const router = useRouter()
 
 const weatherList = ref([])
 
+// 사용자가 추가한 도시를 저장할 때 사용할 이름입니다.
+const STORAGE_KEY = 'weather-custom-cities'
+
+// 브라우저에 저장된 도시 목록을 가져옵니다.
+const loadSavedCities = () => {
+  try {
+    const savedCities = localStorage.getItem(STORAGE_KEY)
+
+    // 저장된 내용이 없으면 빈 배열을 반환합니다.
+    if (!savedCities) {
+      return []
+    }
+
+    const parsedCities = JSON.parse(savedCities)
+
+    return Array.isArray(parsedCities) ? parsedCities : []
+  } catch (error) {
+    console.error('저장된 도시를 불러오지 못했습니다:', error)
+    return []
+  }
+}
+
+// 사용자가 추가한 도시 목록을 브라우저에 저장합니다.
+const saveCities = (cities) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cities))
+}
+
 //로딩과 오류 상태 추가
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -39,8 +66,12 @@ const loadWeatherList = async () => {
   errorMessage.value = ''
 
   try {
+    // 기본 도시와 사용자가 저장한 도시를 합칩니다.
+    const savedCities = loadSavedCities()
+    const allLocations = [...CITY_LOCATIONS, ...savedCities]
+
     const results = await Promise.all(
-      CITY_LOCATIONS.map(async (location) => {
+      allLocations.map(async (location) => {
         const data = await fetchCurrentWeather(location.lat, location.lon)
 
         // OpenWeather 응답을
@@ -139,6 +170,18 @@ const handleSearchCity = async () => {
 
     // 4. (핵심) 기존 날씨 목록 마지막에 새 지역을 추가합니다.
     weatherList.value.push(newCity)
+
+    // 기본 도시를 제외하고 사용자가 검색해 추가한 도시만 저장합니다.
+    const savedCities = loadSavedCities()
+
+    savedCities.push({
+      id: newCity.id,
+      name: newCity.name,
+      lat: newCity.lat,
+      lon: newCity.lon,
+    })
+
+    saveCities(savedCities)
 
     // 검색창을 비워 전체 도시 목록을 보여줍니다.
     searchQuery.value = ''
