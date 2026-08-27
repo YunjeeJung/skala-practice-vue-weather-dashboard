@@ -40,6 +40,21 @@ const checkApiKey = () => {
   }
 }
 
+// 사용자가 입력한 지역 이름을 위도와 경도로 변환합니다.
+export const searchLocationByName = async (query) => {
+  checkApiKey()
+
+  const response = await openWeatherApi.get('/geo/1.0/direct', {
+    params: {
+      q: query,
+      limit: 1,
+      appid: API_KEY,
+    },
+  })
+
+  return response.data
+}
+
 // 실제 현재 날씨
 export const fetchCurrentWeather = async (lat, lon) => {
   checkApiKey()

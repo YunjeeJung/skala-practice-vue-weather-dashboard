@@ -83,8 +83,27 @@ const loadWeatherDetail = async () => {
   // 주소가 /weather/city_01이라면 cityId에는 city_01이 들어갑니다.
   const cityId = route.params.cityId
 
-  // CITY_LOCATIONS에서 주소의 cityId와 같은 도시를 찾습니다.
-  const location = CITY_LOCATIONS.find((city) => city.id === cityId)
+  // 먼저 기본으로 등록된 도시에서 찾습니다.
+  const registeredLocation = CITY_LOCATIONS.find((city) => city.id === cityId)
+
+  // 주소 query로 받은 좌표를 숫자로 변환합니다.
+  const queryLat = Number(route.query.lat)
+  const queryLon = Number(route.query.lon)
+
+  // 유효한 좌표인지 확인합니다.
+  const hasQueryLocation = Number.isFinite(queryLat) && Number.isFinite(queryLon)
+
+  // 기본 목록에 없는 도시라면 query의 좌표를 사용합니다.
+  const location =
+    registeredLocation ??
+    (hasQueryLocation
+      ? {
+          id: cityId,
+          name: String(route.query.name ?? '검색 지역'),
+          lat: queryLat,
+          lon: queryLon,
+        }
+      : null)
 
   // 해당 도시를 찾지 못했다면 API를 호출하지 않습니다.
   if (!location) {
