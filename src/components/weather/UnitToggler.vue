@@ -21,9 +21,6 @@ const configStore = useConfigStore()
     <el-button type="info" plain @click="configStore.toggleWeatherStatus">
       {{ configStore.statusButtonText }}
     </el-button>
-    <button type="button" @click="configStore.toggleWeatherStatus">
-      {{ configStore.statusButtonText }}
-    </button>
   </div>
 </template>
 
